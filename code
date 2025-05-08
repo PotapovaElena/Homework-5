@@ -1,0 +1,176 @@
+# Исходные данные (эти данные доступны в глобальной области видимости Jupyter Notebook)
+documents = [
+    {'type': 'passport', 'number': '2207 876234', 'name': 'Василий Гупкин'},
+    {'type': 'invoice', 'number': '11-2', 'name': 'Геннадий Покемонов'},
+    {'type': 'insurance', 'number': '10006', 'name': 'Аристарх Павлов'}
+]
+
+directories = {
+    '1': ['2207 876234', '11-2'],
+    '2': ['10006'],
+    '3': []
+}
+
+# Функции (код функций остается без изменений, кроме добавления show_shelf_by_document_number)
+def list_documents(docs):
+    """Выводит список всех документов."""
+    if not docs:
+        print("Документы отсутствуют.")
+        return
+    for i, doc in enumerate(docs):
+        print(f"{i+1}: {doc}")
+
+def list_directories(dirs):
+    """Выводит список всех полок."""
+    if not dirs:
+        print("Полки отсутствуют.")
+        return
+    for shelf, doc_numbers in dirs.items():
+        print(f"Полка {shelf}: {doc_numbers}")
+
+def get_document_by_number(doc_number, docs):
+    """Находит документ по номеру."""
+    for doc in docs:
+        if doc['number'] == doc_number:
+            return doc
+    return None
+
+def add_document(docs, dirs):
+    """Добавляет новый документ."""
+    doc_type = input("Введите тип документа: ")
+    doc_number = input("Введите номер документа: ")
+    doc_name = input("Введите имя владельца: ")
+
+    new_doc = {'type': doc_type, 'number': doc_number, 'name': doc_name}
+    docs.append(new_doc)
+
+    shelf_number = input("Введите номер полки для нового документа: ")
+    if shelf_number in dirs:
+        dirs[shelf_number].append(doc_number)
+    else:
+        dirs[shelf_number] = [doc_number]
+
+    print("Документ успешно добавлен.")
+
+def move_document(dirs):
+    """Перемещает документ на другую полку."""
+    doc_number = input("Введите номер документа для перемещения: ")
+    old_shelf = None
+    new_shelf = input("Введите номер новой полки: ")
+
+    # Находим полку, на которой сейчас документ
+    for shelf, doc_numbers in dirs.items():
+        if doc_number in doc_numbers:
+            old_shelf = shelf
+            break
+
+    if old_shelf is None:
+        print("Документ не найден ни на одной из полок.")
+        return
+
+    # Перемещаем документ
+    dirs[old_shelf].remove(doc_number)
+    if new_shelf in dirs:
+        dirs[new_shelf].append(doc_number)
+    else:
+        dirs[new_shelf] = [doc_number]
+
+    print("Документ успешно перемещен.")
+
+def delete_document(docs, dirs):
+    """Удаляет документ."""
+    doc_number = input("Введите номер документа для удаления: ")
+
+    # Удаляем документ из списка документов
+    doc_to_delete = get_document_by_number(doc_number, docs)
+    if doc_to_delete:
+        docs.remove(doc_to_delete)
+    else:
+        print("Документ не найден в списке документов.")
+        return
+
+    # Удаляем документ со всех полок
+    for shelf, doc_numbers in dirs.items():
+        if doc_number in doc_numbers:
+            dirs[shelf].remove(doc_number)
+
+    print("Документ успешно удален.")
+
+def get_shelf_by_document(doc_number, dirs):
+    """Возвращает номер полки, на которой находится документ."""
+    for shelf, doc_numbers in dirs.items():
+        if doc_number in doc_numbers:
+            return shelf
+    return None
+
+def show_document_details(docs, dirs):
+    """Показывает информацию о документе и полке, на которой он находится."""
+    doc_number = input("Введите номер документа: ")
+    doc = get_document_by_number(doc_number, docs)
+
+    if doc:
+        print("Информация о документе:")
+        print(doc)
+        shelf = get_shelf_by_document(doc_number, dirs)
+        if shelf:
+            print(f"Документ находится на полке: {shelf}")
+        else:
+            print("Документ не найден ни на одной из полок.")
+    else:
+        print("Документ не найден.")
+
+def get_owner_by_document_number(docs):
+    """Выводит владельца документа по номеру."""
+    doc_number = input("Введите номер документа: ")
+    doc = get_document_by_number(doc_number, docs)
+
+    if doc:
+        print(f"Владелец документа: {doc['name']}")
+    else:
+        print("Документ с таким номером не найден.")
+
+
+def show_shelf_by_document_number(dirs):
+    """Выводит номер полки, на которой находится документ по номеру документа."""
+    doc_number = input("Введите номер документа: ")
+    shelf = get_shelf_by_document(doc_number, dirs)
+    if shelf:
+        print(f"Документ находится на полке: {shelf}")
+    else:
+        print("Документ с таким номером не найден ни на одной из полок.")
+
+
+def run_command(command):
+    """Выполняет команду."""
+    if command == 'list_docs':
+        list_documents(documents)
+    elif command == 'list_dirs':
+        list_directories(directories)
+    elif command == 'add_doc':
+        add_document(documents, directories)
+    elif command == 'move_doc':
+        move_document(directories)
+    elif command == 'delete_doc':
+        delete_document(documents, directories)
+    elif command == 'show_doc':
+        show_document_details(documents, directories)
+    elif command == 'p':
+        get_owner_by_document_number(documents)
+    elif command == 's':
+        show_shelf_by_document_number(directories)  # Добавлено
+    elif command == 'q':
+        return False  # Сигнал для завершения цикла
+    else:
+        print("Неизвестная команда. Попробуйте еще раз.")
+    return True
+
+
+# Основной цикл в Jupyter Notebook
+print("Доступные команды: list_docs, list_dirs, add_doc, move_doc, delete_doc, show_doc, p, s, q - выход") # Обновлено
+running = True
+while running:
+    command = input("Введите команду: ")
+    running = run_command(command)
+
+print("Выход из программы.")
+  
